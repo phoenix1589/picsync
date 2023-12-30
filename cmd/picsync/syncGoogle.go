@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"math"
 
 	"github.com/andrewjjenkins/picsync/pkg/cache"
 	"github.com/andrewjjenkins/picsync/pkg/googlephotos"
@@ -114,6 +115,10 @@ func runSyncGooglephotosEvery(clients syncClients, albums []*util.ConfigAlbum, e
 func doSyncGooglephotos(clients syncClients, album *util.ConfigAlbum) error {
 	sourceAlbums := album.Sources.Googlephotos
 
+	if album.MaxPlaylist == 0 {
+		album.MaxPlaylist = 2000
+	}
+
 	if len(sourceAlbums) == 0 {
 		fmt.Printf("No source album. Cowardly refusing to delete all destination photos.\n")
 		return nil
@@ -167,6 +172,7 @@ func doSyncGooglephotos(clients syncClients, album *util.ConfigAlbum) error {
 
 	// Get the nixplay image metadata for the requested album
 	var npPhotos []*nixplay.Photo
+	var plPhotos []*nixplay.Photo
 	page := 1
 	limit := 100
 	for {
@@ -242,7 +248,16 @@ func doSyncGooglephotos(clients syncClients, album *util.ConfigAlbum) error {
 	}
 	fmt.Fprintf(os.Stdout, "\033[2K\rRefreshed %d playlist images for album %s\n",
 		len(npPhotos), npAlbum.Title)
-	plName := fmt.Sprintf("ss_%s", album.Name)
+	forcePublish := false
+	if album.ForcePublish != nil {
+		forcePublish = *album.ForcePublish
+	}
+	playlists_required := math.Ceil(float64(len(npPhotos)) / float64(album.MaxPlaylist))
+	fmt.Printf("Calculating: %d images, %d per playlist = %d Playlists\n",
+		len(npPhotos), album.MaxPlaylist, int(playlists_required))
+	
+	for i := 0; i < int(playlists_required); i++ {
+		plName := fmt.Sprintf("ss_%s_%d", album.Name, i)
 	pl, err := clients.nixplay.GetPlaylistByName(plName)
 	var playlistId int
 	neededCreate := false
@@ -262,23 +277,24 @@ func doSyncGooglephotos(clients syncClients, album *util.ConfigAlbum) error {
 			return err
 		}
 	}
-
-	forcePublish := false
-	if album.ForcePublish != nil {
-		forcePublish = *album.ForcePublish
+		if i+1 < int(playlists_required) {
+			plPhotos = npPhotos[(i * album.MaxPlaylist) : (i * album.MaxPlaylist) + album.MaxPlaylist]
+		} else {
+			plPhotos = npPhotos[(int(playlists_required - 1) * album.MaxPlaylist):]
 	}
 	if len(work.ToUpload) > 0 || len(work.ToDelete) > 0 || neededCreate || forcePublish {
-		err = clients.nixplay.PublishPlaylist(playlistId, npPhotos)
+			err = clients.nixplay.PublishPlaylist(playlistId, plPhotos)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Published %d photos to playlist %s\n", len(npPhotos), plName)
+			fmt.Printf("Published %d photos to playlist %s\n", len(plPhotos), plName)
 	} else {
 		fmt.Printf(
 			"No changes required for slideshow %s (%d photos)\n",
 			plName,
-			len(npPhotos),
+				len(plPhotos),
 		)
+		}
 	}
 	return nil
 }

@@ -16,6 +16,7 @@ type Config struct {
 
 type ConfigAlbum struct {
 	Name         string             `yaml:"name"`
+	MaxPlaylist  int            	`yaml:"maxPlaylist"`
 	DryRun       *bool              `yaml:"dryRun,omitempty"`
 	Delete       *bool              `yaml:"delete,omitempty"`
 	ForcePublish *bool              `yaml:"forcePublish,omitempty"`

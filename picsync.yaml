@@ -3,7 +3,7 @@
 #   1. Create the album (if it doesn't exit)
 #   2. Upload all photos from each source into the album.
 #   3. Delete all photos in the album not in any source.
-#   4. Create/update a playlist called "ss_<album.name>", containing the
+#   4. Create/update a playlist called "ss_<album.name>_<index>", containing the
 #      photos from that album.
 albums:
 # This will create/update the nixplay album named "AllMyStuff", and
@@ -20,6 +20,9 @@ albums:
   # If true, force publishing the playlist even if nothing has changed.  This
   # can help fix issues if the nixplay albums or playlists get corrupted.
   #forcePublish: true
+  # Set the maximum number of photos that can exist in a playlist. If
+  # more photos are in album, additional playlists are created.
+  #maxPlaylist: 2000
 
 # Repeat the sync every interval forever, rather than running once and exiting.
 # Can be any string parseable by time.ParseInterval
