@@ -88,6 +88,9 @@ func runSyncGooglephotosOnce(clients syncClients, albums []*util.ConfigAlbum) {
 func runSyncGooglephotosEvery(clients syncClients, albums []*util.ConfigAlbum, every string) {
 	everyCronSpec := fmt.Sprintf("@every %s", every)
 	job := func() {
+		// Log in to services each cron run, in case we've been logged out
+		clients.googlephotos = getGooglephotoClientOrExit(clients.cache)
+		clients.nixplay = getNixplayClientOrExit()
 		for _, album := range albums {
 			err := doSyncGooglephotos(clients, album)
 			if err != nil {
