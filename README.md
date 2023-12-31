@@ -1,9 +1,5 @@
 Picsync
 =======
-
-> :warning: **Hobby Project rarely updated**: Please check "last updated" date; I've stopped actively maintaining this project.
-
-
 [![Go Report Card](https://goreportcard.com/badge/github.com/andrewjjenkins/picsync)](https://goreportcard.com/report/github.com/andrewjjenkins/picsync)
 
 
@@ -11,6 +7,16 @@ This syncs pictures from Google Photos albums to Nixplay Seed wifi-enabled pictu
 frames.
 
 ![Image of syncing](picsync.png)
+
+Fork
+----
+
+This fork changes the behaviour for a couple of features from the original (and excellent) work done by @andrewjjenkins:
+ - Additional playlists are created for albums containing more than 2000 photos. (Useful is using an auto-updating album)
+ - When running with a sync interval, re-authenticate with Nixplay each time (Useful if you ever log into the web interface or app, which will log out this tool)
+
+> :warning: This is my first time working with golang, so the changes are badly written.
+
 
 Installation
 ------------
