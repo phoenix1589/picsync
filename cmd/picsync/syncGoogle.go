@@ -257,9 +257,13 @@ func doSyncGooglephotos(clients syncClients, album *util.ConfigAlbum) error {
 	playlists_required := math.Ceil(float64(len(npPhotos)) / float64(album.MaxPlaylist))
 	fmt.Printf("Calculating: %d images, %d per playlist = %d Playlists\n",
 		len(npPhotos), album.MaxPlaylist, int(playlists_required))
-	
+	var plName string
 	for i := 0; i < int(playlists_required); i++ {
-		plName := fmt.Sprintf("ss_%s_%d", album.Name, i)
+		if i == 0 {
+			plName = fmt.Sprintf("ss_%s", album.Name)	
+		} else {
+			plName = fmt.Sprintf("ss_%s_%d", album.Name, i)
+		}
 	pl, err := clients.nixplay.GetPlaylistByName(plName)
 	var playlistId int
 	neededCreate := false
