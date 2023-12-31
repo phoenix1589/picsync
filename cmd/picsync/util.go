@@ -7,6 +7,25 @@ import (
 	"github.com/andrewjjenkins/picsync/pkg/nixplay"
 )
 
+func ReAuthNixplay(client nixplay.Client) (c nixplay.Client) {
+	username := viper.GetString("nixplay.username")
+	if username == "" {
+		fmt.Printf("Must provide a nixplay username")
+		os.Exit(1)
+	}
+	password := viper.GetString("nixplay.password")
+	if password == "" {
+		fmt.Printf("Must provide a nixplay password")
+		os.Exit(1)
+	}
+	err := client.ReAuth(username, password)
+	if err != nil {
+		fmt.Printf("Nixplay Reauth error: %v", err)
+		os.Exit(1)
+	}
+	return client
+}
+
 func getNixplayClientOrExit() (c nixplay.Client) {
 	username := viper.GetString("nixplay.username")
 	if username == "" {

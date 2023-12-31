@@ -21,6 +21,7 @@ type Client interface {
 	GetPlaylists() ([]*Playlist, error)
 	GetPlaylistByName(name string) (*Playlist, error)
 	PublishPlaylist(playlistId int, photos []*Photo) error
+	ReAuth(username, password string) error
 }
 
 type clientImpl struct {
@@ -28,6 +29,24 @@ type clientImpl struct {
 
 	prom promImpl
 }
+
+func (c *clientImpl) ReAuth(username, password string) (error) {
+	auth, err := doLogin(username, password)
+	if err != nil {
+		return err
+	}
+	tr := &http.Transport{
+		ResponseHeaderTimeout: time.Duration(600 * time.Second),
+	}
+	httpClient := &http.Client{
+		Timeout:   time.Duration(600 * time.Second),
+		Transport: tr,
+		Jar:       auth.Jar,
+	}
+	c.httpClient = httpClient
+
+	return nil
+  }
 
 // NewClient logs in to Nixplay and returns a Client for future requests
 func NewClient(username, password string, reg prometheus.Registerer) (Client, error) {
